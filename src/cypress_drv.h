@@ -1,10 +1,10 @@
 /**
-*  @file      bq25703a_drv.h
-*  @brief     bq25703a i2c drv
+*  @file      cypress_drv.h
+*  @brief     cypress_drv
 *  @author    Zack Li
-*  @date      11 -2019
+*  @date      1 -2020
 *  @copyright
-*/
+*
 
 #ifndef _CYPRESS_DRV_H_
 #define _CYPRESS_DRV_H_
@@ -22,13 +22,13 @@
 #include <poll.h>
 
 
-#define NOT_TOUCH		 0
-#define PROX      	   	 1
-#define VOL_UP        	 3
-#define PLAY_PAUSE       5
+#define NOT_TOUCH        0
+#define PROX             1
+#define VOL_UP           3
+#define VOL_DOWN         5
 #define LIBERTY_PULL     9
-#define VOL_DOWN     	 17
-#define FORMATION    	 33
+#define FORMATION        17
+#define PLAY_PAUSE       33
 
 
 #endif

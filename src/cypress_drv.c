@@ -20,7 +20,7 @@
 #include "cypress_drv.h"
 
 
-#define I2C_FILE_NAME   "/dev/i2c-2"
+#define I2C_FILE_NAME   "/dev/i2c-3"
 #define CYPRESS_I2C_ADDR        0x08
 
 static int fd_i2c;
@@ -62,7 +62,6 @@ int i2c_open_cypress(void)
     return 0;
 }
 
-
 static int i2c_write_cypress(unsigned char dev_addr, unsigned char *val, unsigned char len)
 {
     int ret;
@@ -90,7 +89,6 @@ static int i2c_write_cypress(unsigned char dev_addr, unsigned char *val, unsigne
 
     return 0;
 }
-
 
 static int i2c_read_cypress(unsigned char addr, unsigned char *reg, unsigned char *val, unsigned char len)
 {
@@ -130,43 +128,36 @@ void adk_message_send(unsigned char button_status)
     switch (button_status)
     {
         case NOT_TOUCH:
-            sprintf(adk_buf, "\n \r.NOT_TOUCH");
 
             break;
         case PROX:
-            sprintf(adk_buf, "\n \r.PROX");
 
             break;
         case VOL_UP:
-            sprintf(adk_buf, "\n \r.VOL_UP");
 
             system(" adk-message-send 'button_pressed{button:\"VOLUP\"}' ");
             break;
         case VOL_DOWN:
-            sprintf(adk_buf, "\n \r.VOL_DOWN");
 
             system(" adk-message-send 'button_pressed{button:\"VOLDOWN\"}' ");
             break;
         case PLAY_PAUSE:
-            sprintf(adk_buf, "\n \r.PLAY_PAUSE");
 
             system(" adk-message-send 'button_pressed{button:\"PLAY\"}' ");
             break;
         case LIBERTY_PULL:
-            sprintf(adk_buf, "\n \r.LIBERTY_PULL");
 
             system(" adk-message-send 'button_pressed{button:\"ACTION\"}' ");
             break;
         case FORMATION:
-            sprintf(adk_buf, "\n \r.FORMATION");
 
             system(" adk-message-send 'button_pressed{button:\"FORMATION\"}' ");
             break;
         default:
-            sprintf(adk_buf, "\n \r.MULTIPLE BUTTON");
+
             break;
     }
-    //printf("%s\n",adk_buf);
+
 }
 
 int is_buttons(unsigned char recbuf)
@@ -198,6 +189,7 @@ int is_buttons(unsigned char recbuf)
 int main(int argc, char* argv[])
 {
     int i;
+    int button_test_times = 0;
     unsigned char read_reg= 0;
     unsigned char recbuf = 0;
     unsigned char last_status = 0;
@@ -231,24 +223,25 @@ int main(int argc, char* argv[])
                 if(release_flag == 1)//判断是否是按键松开了
                 {
                     release_flag = 0;
-                    //printf("--- %d ---\n",release_status);
                     result_status = release_status;
                     adk_message_send(result_status);
+                    //printf(".%d\n",++button_test_times);
                 }
                 release_flag = 1; //按键松开的标志
                 if ((recbuf == 0)|(recbuf == 1)) //判断变化的状态是 proximity 还是 notouch
                 {
                     release_flag=0;
-                    //printf("### %d ###\n",recbuf);
                     result_status = recbuf;
                     adk_message_send(result_status);
                 }
                 release_status = recbuf; //产生变化时候的状态
             }
             last_status = recbuf; //记录接收到的前一个状态
-        }else{
-			printf(".%d \n",recbuf);
-		}
+        }
+        else
+        {
+            printf(".%d \n",recbuf);
+        }
     }
 
     return 0;
