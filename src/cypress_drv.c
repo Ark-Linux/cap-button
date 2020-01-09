@@ -191,12 +191,12 @@ int main(int argc, char* argv[])
     int i;
     int button_test_times = 0;
     unsigned char read_reg= 0;
-    unsigned char recbuf = 0;
+    unsigned char recbuf[17] = {0};
     unsigned char last_status = 0;
     unsigned char release_flag = 0;
     unsigned char release_status = 0;
     unsigned char result_status = 0;
-
+	
     if(argc > 1)
     {
         for(i = 0; i < argc; i++)
@@ -215,10 +215,10 @@ int main(int argc, char* argv[])
     while(1)
     {
         usleep(200000);
-        i2c_read_cypress(0x08, &read_reg, &recbuf, 1);
-        if(is_buttons(recbuf) != 0)
+		i2c_read_cypress(0x08, &read_reg, recbuf, 17);
+		if(is_buttons(recbuf[16]) != 0)
         {
-            if(last_status != recbuf)//判断是否有变化
+            if(last_status != recbuf[16])//判断是否有变化
             {
                 if(release_flag == 1)//判断是否是按键松开了
                 {
@@ -228,20 +228,22 @@ int main(int argc, char* argv[])
                     //printf(".%d\n",++button_test_times);
                 }
                 release_flag = 1; //按键松开的标志
-                if ((recbuf == 0)|(recbuf == 1)) //判断变化的状态是 proximity 还是 notouch
+                if ((recbuf[16] == 0)|(recbuf[16] == 1)) //判断变化的状态是 proximity 还是 notouch
                 {
                     release_flag=0;
-                    result_status = recbuf;
+                    result_status = recbuf[16];
                     adk_message_send(result_status);
                 }
-                release_status = recbuf; //产生变化时候的状态
+                release_status = recbuf[16]; //产生变化时候的状态
             }
-            last_status = recbuf; //记录接收到的前一个状态
+            last_status = recbuf[16]; //记录接收到的前一个状态
         }
         else
         {
-            printf(".%d \n",recbuf);
+            printf(".%d \n",recbuf[16]);
         }
+		
+		
     }
 
     return 0;
