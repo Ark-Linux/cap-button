@@ -23,9 +23,17 @@
 #define I2C_FILE_NAME   "/dev/i2c-3"
 #define CYPRESS_I2C_ADDR        0x08
 
+#define RECBUF_SIZE         17
+#define BUTTON_STATUS_BIT   16
+
+#define READ_SLEEP_TIME 200000
+#define BUTTON_RELEASE  1
+#define IS_NOT_BUTTON   0
+
+
 static int fd_i2c;
 
-int i2c_open_cypress(void)
+static int i2c_open_cypress(void)
 {
     int ret;
     int val;
@@ -122,7 +130,7 @@ static int i2c_read_cypress(unsigned char addr, unsigned char *reg, unsigned cha
     return 0;
 }
 
-void adk_message_send(unsigned char button_status)
+static void adk_message_send(unsigned char button_status)
 {
     unsigned char adk_buf[64] = {0};
     switch (button_status)
@@ -160,7 +168,7 @@ void adk_message_send(unsigned char button_status)
 
 }
 
-int is_buttons(unsigned char recbuf)
+static int is_buttons(unsigned char recbuf)
 {
     unsigned char whats = 1;
     switch (recbuf)
@@ -188,22 +196,13 @@ int is_buttons(unsigned char recbuf)
 
 int main(int argc, char* argv[])
 {
-    int i;
-    int button_test_times = 0;
+    //int button_test_times = 0;
     unsigned char read_reg= 0;
-    unsigned char recbuf[17] = {0};
+    unsigned char recbuf[RECBUF_SIZE] = {0};
     unsigned char last_status = 0;
-    unsigned char release_flag = 0;
+    unsigned char release_flag = IS_NOT_BUTTON;
     unsigned char release_status = 0;
-    unsigned char result_status = 0;
-	
-    if(argc > 1)
-    {
-        for(i = 0; i < argc; i++)
-        {
-            printf("Argument %d is %s\n", i, argv[i]);
-        }
-    }
+    unsigned char result_status = NOT_TOUCH;
 
     if(i2c_open_cypress() != 0)
     {
@@ -211,39 +210,37 @@ int main(int argc, char* argv[])
         return -1;
     }
 
-
     while(1)
     {
-        usleep(200000);
-		i2c_read_cypress(0x08, &read_reg, recbuf, 17);
-		if(is_buttons(recbuf[16]) != 0)
+        usleep(READ_SLEEP_TIME);
+        i2c_read_cypress(CYPRESS_I2C_ADDR, &read_reg, recbuf, RECBUF_SIZE);
+        if(is_buttons(recbuf[BUTTON_STATUS_BIT]))
         {
-            if(last_status != recbuf[16])//判断是否有变化
+            if(last_status != recbuf[BUTTON_STATUS_BIT])//whether the capsense status change
             {
-                if(release_flag == 1)//判断是否是按键松开了
+                if(release_flag == BUTTON_RELEASE)//whether the button release
                 {
-                    release_flag = 0;
+                    release_flag = IS_NOT_BUTTON;
                     result_status = release_status;
                     adk_message_send(result_status);
                     //printf(".%d\n",++button_test_times);
                 }
-                release_flag = 1; //按键松开的标志
-                if ((recbuf[16] == 0)|(recbuf[16] == 1)) //判断变化的状态是 proximity 还是 notouch
+                release_flag = BUTTON_RELEASE; //modify the button release flag
+                if ((recbuf[BUTTON_STATUS_BIT] == NOT_TOUCH)|(recbuf[BUTTON_STATUS_BIT] == PROX)) //the change is  proximity or notouch
                 {
-                    release_flag=0;
-                    result_status = recbuf[16];
+                    release_flag = IS_NOT_BUTTON;
+                    result_status = recbuf[BUTTON_STATUS_BIT];
                     adk_message_send(result_status);
                 }
-                release_status = recbuf[16]; //产生变化时候的状态
+                release_status = recbuf[BUTTON_STATUS_BIT]; //save the last button status
             }
-            last_status = recbuf[16]; //记录接收到的前一个状态
+            last_status = recbuf[BUTTON_STATUS_BIT]; //save the last status
         }
         else
         {
-            printf(".%d \n",recbuf[16]);
+            printf(".%d \n", recbuf[BUTTON_STATUS_BIT]);
         }
-		
-		
+
     }
 
     return 0;
