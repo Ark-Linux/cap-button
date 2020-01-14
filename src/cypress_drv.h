@@ -23,12 +23,11 @@
 
 
 #define NOT_TOUCH		 0
-#define PROX      	   	 32
-#define VOL_UP        	 33
-#define VOL_DOWN         34
-#define LIBERTY_PULL     40
-#define FORMATION     	 48
-#define PLAY_PAUSE    	 36
+#define PROX      	   	 16
+#define VOL_UP        	 17
+#define VOL_DOWN         18
+#define FORMATION     	 24
+#define PLAY_PAUSE    	 20
 
 
 #endif

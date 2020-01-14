@@ -131,13 +131,12 @@ static int i2c_read_cypress(unsigned char addr, unsigned char *reg, unsigned cha
 }
 
 /*
-*	NOT_TOUCH		stop led and delay 15s
-*	PROX			start led forever
-*	VOL_UP			adk-message-send 'button_pressed{button:\"VOLUP\"}'
-*	VOL_DOWN		adk-message-send 'button_pressed{button:\"VOLDOWN\"}'
-*	PLAY_PAUSE		adk-message-send 'button_pressed{button:\"PLAY\"}'
-*	LIBERTY_PULL	adk-message-send 'button_pressed{button:\"ACTION\"}'
-*	FORMATION		adk-message-send 'button_pressed{button:\"FORMATION\"}'
+*   NOT_TOUCH       stop led and delay 15s
+*   PROX            start led forever
+*   VOL_UP          adk-message-send 'button_pressed{button:\"VOLUP\"}'
+*   VOL_DOWN        adk-message-send 'button_pressed{button:\"VOLDOWN\"}'
+*   PLAY_PAUSE      adk-message-send 'button_pressed{button:\"PLAY\"}'
+*   FORMATION       adk-message-send 'button_pressed{button:\"FORMATION\"}'
 */
 static void adk_message_send(unsigned char button_status)
 {
@@ -145,30 +144,28 @@ static void adk_message_send(unsigned char button_status)
     switch (button_status)
     {
         case NOT_TOUCH:
-			printf(".NOT_TOUCH \n");
+            //printf(".NOT_TOUCH ----------- \n");
+            system(" adk-message-send 'led_start_pattern{pattern:30}' ");
             break;
         case PROX:
-			printf(".PROX \n");
+            //printf(".PROX ---------------  \n");
+            system(" adk-message-send 'led_start_pattern{pattern:29}' ");
             break;
         case VOL_UP:
-			printf(".VOL_UP \n");
-            //system(" adk-message-send 'button_pressed{button:\"VOLUP\"}' ");
+            //printf(".VOL_UP \n");
+            system(" adk-message-send 'button_pressed{button:\"VOLUP\"}' ");
             break;
         case VOL_DOWN:
-			printf(".VOL_DOWN \n");
-            //system(" adk-message-send 'button_pressed{button:\"VOLDOWN\"}' ");
+            //printf(".VOL_DOWN \n");
+            system(" adk-message-send 'button_pressed{button:\"VOLDOWN\"}' ");
             break;
         case PLAY_PAUSE:
-			printf(".PLAY_PAUSE \n");
-            //system(" adk-message-send 'button_pressed{button:\"PLAY\"}' ");
-            break;
-        case LIBERTY_PULL:
-			printf(".LIBERTY_PULL \n");
-            //system(" adk-message-send 'button_pressed{button:\"ACTION\"}' ");
+            //printf(".PLAY_PAUSE \n");
+            system(" adk-message-send 'button_pressed{button:\"PLAY\"}' ");
             break;
         case FORMATION:
-			printf(".FORMATION \n");
-            //system(" adk-message-send 'button_pressed{button:\"FORMATION\"}' ");
+            //printf(".FORMATION \n");
+            system(" adk-message-send 'button_pressed{button:\"FORMATION\"}' ");
             break;
         default:
 
@@ -192,8 +189,6 @@ static int is_buttons(unsigned char recbuf)
             break;
         case PLAY_PAUSE:
             break;
-        case LIBERTY_PULL:
-            break;
         case FORMATION:
             break;
         default:
@@ -212,7 +207,7 @@ int main(int argc, char* argv[])
     unsigned char release_flag = IS_NOT_BUTTON;
     unsigned char release_status = 0;
     unsigned char result_status = NOT_TOUCH;
-	unsigned char prox_status = 0;
+    unsigned char prox_status = 0;
 
     if(i2c_open_cypress() != 0)
     {
@@ -240,12 +235,13 @@ int main(int argc, char* argv[])
                 {
                     release_flag = IS_NOT_BUTTON;
                     result_status = recbuf[BUTTON_STATUS_BIT];
-					//avoid proximity always trigger
-					if(prox_status != recbuf[BUTTON_STATUS_BIT]){
-                    	adk_message_send(result_status);
-					}
-					prox_status = recbuf[BUTTON_STATUS_BIT];
-				}
+                    //avoid proximity always trigger
+                    if(prox_status != recbuf[BUTTON_STATUS_BIT])
+                    {
+                        adk_message_send(result_status);
+                    }
+                    prox_status = recbuf[BUTTON_STATUS_BIT];
+                }
                 release_status = recbuf[BUTTON_STATUS_BIT]; //save the last button status
             }
             last_status = recbuf[BUTTON_STATUS_BIT]; //save the last status
