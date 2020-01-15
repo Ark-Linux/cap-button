@@ -214,10 +214,7 @@ int main(int argc, char* argv[])
         printf("i2c can't open cypress!\n");
         return -1;
     }
-	
-	i2c_read_cypress(CYPRESS_I2C_ADDR, &read_reg, recbuf, RECBUF_SIZE);
-	prox_status = recbuf[BUTTON_STATUS_BIT];
-	
+		
     while(1)
     {
         usleep(READ_SLEEP_TIME);
