@@ -131,8 +131,8 @@ static int i2c_read_cypress(unsigned char addr, unsigned char *reg, unsigned cha
 }
 
 /*
-*   NOT_TOUCH       stop led and delay 15s
-*   PROX            start led forever
+*   NOT_TOUCH       adk-message-send 'button_pressed{button:\"NOPROXIMITY\"}'
+*   PROX            adk-message-send 'button_pressed{button:\"PROXIMITY\"}'
 *   VOL_UP          adk-message-send 'button_pressed{button:\"VOLUP\"}'
 *   VOL_DOWN        adk-message-send 'button_pressed{button:\"VOLDOWN\"}'
 *   PLAY_PAUSE      adk-message-send 'button_pressed{button:\"PLAY\"}'
@@ -144,27 +144,27 @@ static void adk_message_send(unsigned char button_status)
     switch (button_status)
     {
         case NOT_TOUCH:
-            //printf(".NOT_TOUCH ----------- \n");
-            system(" adk-message-send 'led_start_pattern{pattern:30}' ");
+       
+            system(" adk-message-send 'button_pressed{button:\"NOPROXIMITY\"}' ");
             break;
         case PROX:
-            //printf(".PROX ---------------  \n");
-            system(" adk-message-send 'led_start_pattern{pattern:29}' ");
+           
+            system(" adk-message-send 'button_pressed{button:\"PROXIMITY\"}' ");
             break;
         case VOL_UP:
-            //printf(".VOL_UP \n");
+          
             system(" adk-message-send 'button_pressed{button:\"VOLUP\"}' ");
             break;
         case VOL_DOWN:
-            //printf(".VOL_DOWN \n");
+            
             system(" adk-message-send 'button_pressed{button:\"VOLDOWN\"}' ");
             break;
         case PLAY_PAUSE:
-            //printf(".PLAY_PAUSE \n");
+           
             system(" adk-message-send 'button_pressed{button:\"PLAY\"}' ");
             break;
         case FORMATION:
-            //printf(".FORMATION \n");
+           
             system(" adk-message-send 'button_pressed{button:\"FORMATION\"}' ");
             break;
         default:
@@ -214,7 +214,10 @@ int main(int argc, char* argv[])
         printf("i2c can't open cypress!\n");
         return -1;
     }
-
+	
+	i2c_read_cypress(CYPRESS_I2C_ADDR, &read_reg, recbuf, RECBUF_SIZE);
+	prox_status = recbuf[BUTTON_STATUS_BIT];
+	
     while(1)
     {
         usleep(READ_SLEEP_TIME);
